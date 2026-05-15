@@ -1,0 +1,29 @@
+- hosts: terraform-ansible
+  tasks:
+    - name: setup-system
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - python3
+          - virtualenv
+        update_cache: true
+
+    - name: install-deps
+      ansible.builtin.pip:
+        virtualenv: /home/ubuntu/tcc/venv
+        name:
+          - django
+          - djangorestframework
+
+    - name: setup-django-project
+      ansible.builtin.shell: |
+        . /home/ubuntu/tcc/venv/bin/activate
+        django-admin startproject setup /home/ubuntu/tcc/
+      args:
+        creates: /home/ubuntu/tcc/manage.py
+
+    - name: changing-django-allowed-hosts
+      ansible.builtin.lineinfile:
+        path: /home/ubuntu/tcc/setup/settings.py
+        regexp: '^ALLOWED_HOSTS'
+        line: 'ALLOWED_HOSTS = ["*"]'
